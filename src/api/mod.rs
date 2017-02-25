@@ -14,7 +14,7 @@ use valico::json_dsl;
 /*use router::Router;*/
 
 use time::Timespec;
-use rusqlite::Connection;
+use super::db::DatabaseExt;
 
 pub fn root() -> rustless::Api {
     Api::build(|root_api| {
@@ -71,7 +71,7 @@ fn tests() -> rustless::Api {
         tests_api.get("sql", |endpoint| {
             endpoint.handle(|client, params| {
                 println!("Running SQL test");
-                test_sql();
+                test_sql(&client);
                 client.text(String::from("ran SQL test"))
             })
         });
@@ -91,15 +91,9 @@ struct Event {
     data: Option<Vec<u8>>
 }
 
-fn test_sql() {
-    let conn = Connection::open_in_memory().unwrap();
+fn test_sql(client: &rustless::Client) {
+    let conn = client.app.db();
 
-    conn.execute("CREATE TABLE event (
-                  id              INTEGER PRIMARY KEY,
-                  timestamp       TEXT NOT NULL,
-                  bucket          TEXT NOT NULL,
-                  data            BLOB
-                  )", &[]).unwrap();
     let me = Event {
         id: 0,
         timestamp: time::get_time(),
@@ -107,7 +101,7 @@ fn test_sql() {
         data: None
     };
     conn.execute("INSERT INTO event (timestamp, bucket, data)
-                  VALUES (?1, ?2, ?3)",
+                  VALUES (?, ?, ?)",
                  &[&me.timestamp, &me.bucket, &me.data]).unwrap();
 
     let mut stmt = conn.prepare("SELECT id, timestamp, bucket, data FROM event").unwrap();

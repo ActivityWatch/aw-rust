@@ -5,15 +5,10 @@
 extern crate rustless;
 extern crate iron;
 extern crate hyper;
-extern crate rustc_serialize as serialize;
 extern crate valico;
-/*extern crate router;*/
 
 extern crate time;
 extern crate rusqlite;
-
-//use hyper::status::StatusCode;
-/*use router::Router;*/
 
 use rustless::Nesting;
 use rustless::batteries::swagger;
@@ -24,6 +19,7 @@ use valico::json_schema;
 //use rusqlite::Connection;
 
 mod api;
+mod db;
 
 fn main() {
     let mut app = rustless::Application::new(self::api::root());
@@ -74,4 +70,7 @@ fn setup_jsonschema(mut app: &mut rustless::Application) {
 
 fn setup_db(mut app: &mut rustless::Application) {
     //run_db(&mut app);
+    let conn = db::create_connection();
+
+    app.ext.insert::<self::db::AppDb>(conn);
 }
