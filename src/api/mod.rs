@@ -1,6 +1,5 @@
 extern crate rustless;
 extern crate iron;
-extern crate hyper;
 extern crate rustc_serialize as serialize;
 extern crate valico;
 /*extern crate router;*/
@@ -8,11 +7,8 @@ extern crate valico;
 extern crate time;
 extern crate rusqlite;
 
-use iron::prelude::*;
-use iron::status;
-use hyper::status::StatusCode;
 use rustless::{
-    Application, Api, Nesting, Versioning
+    Api, Nesting, Versioning
 };
 use valico::json_dsl;
 /*use router::Router;*/
@@ -26,18 +22,50 @@ pub fn root() -> rustless::Api {
         /*api.version("v1", Versioning::AcceptHeader("aw"));
          *api.prefix("api");*/
 
-        api.mount(Api::build(|events_api| {
-            events_api.prefix("events");
+        api.mount(buckets());
 
+        api.mount(Api::build(|tests_api| {
+            tests_api.prefix("tests");
+
+            tests_api.get("hello", |endpoint| {
+                endpoint.handle(|client, params| {
+                    println!("Running hello_world test");
+                    client.text(hello_world())
+                })
+            });
+
+            tests_api.get("sql", |endpoint| {
+                endpoint.handle(|client, params| {
+                    println!("Running SQL test");
+                    test_sql();
+                    client.text(String::from("ran SQL test"))
+                })
+            });
+        }));
+    })
+}
+
+fn buckets() -> rustless::Api {
+    Api::build(|buckets_api| {
+        buckets_api.prefix("buckets");
+
+        buckets_api.mount(Api::build(|events_api| {
             events_api.namespace(":id", |event_ns| {
                 event_ns.params(|params| {
                     params.req_typed("id", json_dsl::u64());
                 });
 
-                event_ns.get("", |endpoint| {
+                event_ns.get("events", |endpoint| {
                     endpoint.handle(|client, params| {
                         println!("{:?}", params);
-                        Ok(client)
+                        client.text(String::from("events will be listed here later"))
+                    })
+                });
+
+                event_ns.get("heartbeat", |endpoint| {
+                    endpoint.handle(|client, params| {
+                        println!("{:?}", params);
+                        client.text(String::from("events will be listed here later"))
                     })
                 });
             });
@@ -45,8 +73,9 @@ pub fn root() -> rustless::Api {
     })
 }
 
-fn hello_world(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, "Hello World!")))
+fn hello_world() -> String {
+    String::from("Hello World!")
+    //Ok(Response::with((status::Ok, "Hello World!")))
 }
 
 #[derive(Debug)]
@@ -57,7 +86,7 @@ struct Event {
     data: Option<Vec<u8>>
 }
 
-fn test_sql(_: &mut Request) -> IronResult<Response> {
+fn test_sql() {
     let conn = Connection::open_in_memory().unwrap();
 
     conn.execute("CREATE TABLE event (
@@ -90,5 +119,5 @@ fn test_sql(_: &mut Request) -> IronResult<Response> {
         println!("Found event {:?}", event.unwrap());
     }
 
-    Ok(Response::with((status::Ok, "SQL Test was ran")))
+    //Ok(Response::with((status::Ok, "SQL Test was ran")))
 }

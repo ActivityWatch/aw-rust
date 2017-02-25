@@ -2,8 +2,6 @@
  * Much of the code taken from https://github.com/rustless/rustless-example/
  */
 
-
-#[macro_use]
 extern crate rustless;
 extern crate iron;
 extern crate hyper;
@@ -14,17 +12,14 @@ extern crate valico;
 extern crate time;
 extern crate rusqlite;
 
-use iron::prelude::*;
-use iron::status;
-use hyper::status::StatusCode;
+//use hyper::status::StatusCode;
 use valico::json_dsl;
 /*use router::Router;*/
 
 use rustless::batteries::swagger;
 use rustless::Nesting;
 
-use time::Timespec;
-use rusqlite::Connection;
+//use rusqlite::Connection;
 
 mod api;
 
