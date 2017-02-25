@@ -9,12 +9,15 @@ extern crate valico;
 
 extern crate time;
 extern crate rusqlite;
+extern crate serde_json;
 
 use rustless::Nesting;
 use rustless::batteries::swagger;
 use rustless::batteries::schemes;
 
 use valico::json_schema;
+
+use std::io::Read;
 
 //use rusqlite::Connection;
 
@@ -36,7 +39,8 @@ fn main() {
     let host = "0.0.0.0";
     let port: u16 = 8585;
 
-    println!("Server running on {}:{}", host, port);
+    println!("Server running on http://{}:{}/", host, port);
+    println!("API docs at http://{}:{}/api-docs", host, port);
     iron::Iron::new(chain).http((host, port)).unwrap();
 }
 
@@ -65,11 +69,25 @@ fn setup_swagger(mut app: &mut rustless::Application) {
 fn setup_jsonschema(mut app: &mut rustless::Application) {
     let scope = json_schema::Scope::new();
 
+    // Can't get to work due to event_schema_json needing to be of type rustless::Value which, as
+    // far as I can see, is the same as serde_json::Value but for some reason wont work.
+    // See issue I made here: https://github.com/rustless/valico/issues/25
+    /*
+    let event_schema_json: serde_json::Value = {
+        let file = std::fs::File::open("schemas/event.json").unwrap();
+        let mut event_schema_string = String::new();
+        file.read_to_string(&mut event_schema_string);
+        serde_json::from_str(event_schema_string.as_str()).unwrap()
+    };
+
+    let event_schema = scope.compile_and_return(event_schema_json.clone(), true).ok().unwrap();
+    println!("Is valid: {}", event_schema.validate(&event_schema_json).is_valid());
+    */
+
     schemes::enable_schemes(&mut app, scope).unwrap();
 }
 
 fn setup_db(mut app: &mut rustless::Application) {
-    //run_db(&mut app);
     let conn = db::create_connection();
 
     app.ext.insert::<self::db::AppDb>(conn);
