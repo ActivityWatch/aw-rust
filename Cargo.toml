@@ -1,0 +1,16 @@
+[package]
+name = "activitywatch-rust"
+version = "0.1.0"
+authors = ["Erik Bjäreholt <erik.bjareholt@gmail.com>"]
+
+[dependencies]
+rusqlite = "0.9.5"
+time = "0.1.0"
+iron = "0.4.*"
+router = "*"
+hyper = "0.10.*"
+valico = "1.0.*"
+rustc-serialize = "0.3"
+
+[dependencies.rustless]
+git = "https://github.com/rustless/rustless"
