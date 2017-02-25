@@ -17,31 +17,15 @@ use time::Timespec;
 use rusqlite::Connection;
 
 pub fn root() -> rustless::Api {
-    Api::build(|api| {
-        // TODO: What does Versioning::AcceptHeader mean here?
-        /*api.version("v1", Versioning::AcceptHeader("aw"));
-         *api.prefix("api");*/
+    Api::build(|root_api| {
 
-        api.mount(buckets());
-
-        api.mount(Api::build(|tests_api| {
-            tests_api.prefix("tests");
-
-            tests_api.get("hello", |endpoint| {
-                endpoint.handle(|client, params| {
-                    println!("Running hello_world test");
-                    client.text(hello_world())
-                })
-            });
-
-            tests_api.get("sql", |endpoint| {
-                endpoint.handle(|client, params| {
-                    println!("Running SQL test");
-                    test_sql();
-                    client.text(String::from("ran SQL test"))
-                })
-            });
+        root_api.mount(Api::build(|api| {
+            api.prefix("api/");
+            api.version("0", Versioning::Path);
+            api.mount(buckets());
         }));
+
+        root_api.mount(tests());
     })
 }
 
@@ -70,6 +54,27 @@ fn buckets() -> rustless::Api {
                 });
             });
         }));
+    })
+}
+
+fn tests() -> rustless::Api {
+    Api::build(|tests_api| {
+        tests_api.prefix("tests");
+
+        tests_api.get("hello", |endpoint| {
+            endpoint.handle(|client, params| {
+                println!("Running hello_world test");
+                client.text(hello_world())
+            })
+        });
+
+        tests_api.get("sql", |endpoint| {
+            endpoint.handle(|client, params| {
+                println!("Running SQL test");
+                test_sql();
+                client.text(String::from("ran SQL test"))
+            })
+        });
     })
 }
 
