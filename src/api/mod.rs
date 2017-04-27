@@ -83,6 +83,7 @@ fn hello_world() -> String {
     //Ok(Response::with((status::Ok, "Hello World!")))
 }
 
+// TODO: Replace usage with new Event type
 #[derive(Debug)]
 struct Event {
     id: i32,

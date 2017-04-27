@@ -11,7 +11,9 @@ router = "*"
 hyper = "0.10.*"
 valico = "1.0.*"
 rustc-serialize = "0.3"
-serde_json = "0.9"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
 
 [dependencies.rustless]
 git = "https://github.com/rustless/rustless"
